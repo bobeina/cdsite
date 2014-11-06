@@ -14,7 +14,7 @@ cthulhudice/templates/chat/chat.html Line 180: 修改该网址为你自己的主
 ------------------------------------------------------
 This is a webgame bases the table game "cthulhu dice". Python: v2.7.3 Django:v1.6.2
 
-You need to modify these lines before you run it in your own host:
+You need to modify these lines before you run it:
 cthulhudice/view.py Line 20: modify directory of cthulhudice/module to actual one;
 cdsite/settings.py Line 66-68：change to your dbname/username/passwd;
 cthulhudice/templates/chat/chat.html Line 180: change to your actual web url.
