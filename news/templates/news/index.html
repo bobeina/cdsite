@@ -1,0 +1,24 @@
+{% extends 'registration/base.html' %}
+
+{% block title %}公告区{% endblock %}
+
+{% block content %}
+
+	{% for post in posts %}
+	<p><a href=" {{post.get_absolute_url}}">
+			{{post.title}}
+		>></a>
+	</p>
+	
+    <p><span class="white-txt">{{post.description}}</span></p>
+	
+	<p><span class="white-txt">
+	    <time datetime="{{post.created|date:'c'}}">
+		{{post.created|date}}
+	    </time>
+	    </span>
+	</p>
+	<hr />
+	{% endfor %}
+    
+{% endblock %}+

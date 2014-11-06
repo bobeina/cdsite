@@ -1,0 +1,116 @@
+@import url("/static/bootstrap/css/bootstrap.css");
+
+html {
+    margin:0;
+    padding:0;
+    width: 100%
+}
+body {
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    background-size: 100% 100%;
+    padding-top:70px;
+}
+
+#wrap {
+    filter: alpha(opacity=65);
+    -moz-opacity: 0.65;
+    opacity: 0.65;
+}
+
+
+#main {
+    /*width: 900px;*/
+    margin: auto;
+    /*height: 700px;*/
+    padding: 16px;
+    background-color: white/*c6df9c;*/
+}
+
+
+#head {
+    margin: auto;
+}
+
+
+#screen {
+    height: 400px;
+    border: 2px solid #a3a868;
+    overflow-y: scroll;
+    /*color:#000066*/
+}
+
+#pc_list {
+    height: 400px;
+    overflow-y: scroll;
+    border: 2px solid #a3a868;
+}
+
+
+.msgtime {
+    color:#666666;
+    font-size:small;
+}
+
+.send_message {
+    margin-top: 5px;
+}
+
+.send_message .message {
+    /*width:60%;
+    float:left;*/
+}
+
+.send_message .message textarea {
+    width:100%;
+}
+
+
+
+#mybtn {
+	background: #ffffff
+}
+
+#game-id {
+color:#ff3333
+}
+
+#mynick {
+}
+
+#eyeDlg {
+  border-style:solid;
+  width: 100%;
+  height: 100%;
+  background:#fcfcbb;
+  top: 50;
+  left: 0;
+  position:absolute;
+  z-index:50000;
+}
+
+.SYS {
+  font-weight:bold;
+}
+
+
+.IDT {
+  font-weight:bold;
+}
+
+.rndEnd {
+ color:#ff0000; 
+}
+
+
+#waiting-dlg {
+  width: 100%;
+  height: 100%;
+  background:#ffffff;
+  top: 50;
+  left: 0;
+  position:absolute;
+  z-index:60000;
+}

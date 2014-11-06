@@ -1,0 +1,13 @@
+﻿{% extends "registration/base.html" %}
+
+{% block title %}迷雾领域 - 用户注册{% endblock %}
+
+{% block content %}
+  <h1>建立新帐户</h1>
+
+  <form action="" method="post">
+     {% csrf_token %}  
+      {{ form.as_p }}
+      <input type="submit" value="注册">
+  </form>
+{% endblock %}

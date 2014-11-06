@@ -1,0 +1,36 @@
+{% extends 'registration/base.html' %}
+
+{% block title %}{{post.title}}{% endblock %}
+
+{% block content %}
+
+<article>
+	<p>
+		<a href="/news/">返回</a>
+	</p>
+    <header>
+        <h1 class="white-txt">{{post.title}}</h1>
+        <p class="muted">
+            <span class="white-txt">Posted on</span>
+            <time datetime="{{post.created|date:'c'}}">
+              <span class="white-txt">
+                {{post.created|date}}
+              </span>
+            </time>
+        </p>
+    </header>
+	<blockquote>
+		<p class="description">
+		    <span class="white-txt">
+			{{post.description}}
+		    </span>
+		</p>
+	</blockquote>
+	
+    <pre>{{post.content|safe}}</pre>
+	
+	<p>
+		<a href="/news/">返回</a>
+	</p>
+</article>
+{% endblock %}

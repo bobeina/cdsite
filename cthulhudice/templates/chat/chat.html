@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>略彩</title>
+</head>
+<link href="/static/css/chat.css" rel="stylesheet" media="screen">
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+	  <!-- Brand and toggle get grouped for better mobile display -->
+	  <div class="navbar-header">
+		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+		  <span class="sr-only">Toggle navigation</span>
+		  <span class="icon-bar"></span>
+		  <span class="icon-bar"></span>
+		  <span class="icon-bar"></span>
+		</button>
+		<a class="navbar-brand" href="/">略彩</a>
+	  </div>
+	
+	  <!-- Collect the nav links, forms, and other content for toggling -->
+	  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		<ul class="nav navbar-nav">
+		  <li class="active"><a href="/">首页</a></li>
+		  <li><a href="/news">公告</a></li>
+
+		  {% if user.username %}
+		  <li class="disabled"><a href="#">你好，  {{ user.username }} </a></li>
+			  <li>
+				<form metch="post" action="/home/logout/" >
+				  {% csrf_token %}
+				  <input type="submit" value="注销" class="btn btn-primary" />
+				</form>
+			  </li>
+		   {% else %}
+		      <li>
+				  <form action="/home/login/" method="post" class="navbar-form navbar-right" role="form">
+				  {% csrf_token %}
+					<input type="text" name="username" value="" id="username" class="input-large" placeholder="用户名" />
+					<input type="password" name="password" value="" id="password" class="input-large"  placeholder="密码" />
+					  <input type="submit" value="登录" class="btn btn-primary" />
+					  <a href="/forgotpass/"><input type="button" value="忘记密码" class="btn btn-danger"></a>
+					  <a href="/register/"><input type="button" value="注册" class="btn btn-success"></a>
+					  <input type="hidden" name="next" value="{{ next|escape }}" class="btn btn-primary" />
+				  </form>
+		        <!-- {% block login %}{% endblock %} -->
+			  </li>
+		   {% endif %}
+		</ul>
+	  </div><!-- /.navbar-collapse -->
+	</nav>
+	
+	
+	<div id="waiting-dlg">正在载入，请稍候...</div>
+	<div class="container" id="wrap">
+		<div id="main">
+			<div id="head">
+			    <div class="row">
+				    <div class="col-xs-6"><label class="my-title">祭坛</label></div>
+					<div class="col-xs-3" id="mynick"></div>
+					<div class="col-xs-3"><label id="nowdate"></label></div>
+				</div>
+				<div class="row">
+				    <div class="col-xs-4" id="ctr-btn-box">
+						<div id="cjgame-btn">
+							<button type="button" class="btn btn-default" id="createGame">举行祭祀仪式</button>
+							<button type="button" class="btn btn-default" id="joinGame">参加祭祀仪式</button>
+						</div>
+						<div id="sgame-btn">
+							<button type="button" class="btn btn-default" id="startGame">开始</button>
+							<button type="button" class="btn btn-default" id="quitGameBtn">退出祭祀仪式</button>
+						</div>
+					</div>
+					<div class="col-xs-8"><div id="ccode">仪式代码：<label id="game-id"></label></div></div>
+				</div>
+				<br />
+			</div>
+			<div class="row" id="sub-win">
+					<div id="waiting-bar">
+					你在此等待祭祀开始。祭坛后面巨大的神像形似长着一对窄长翅膀的章鱼，令你惊异的是……神像的脸赫然在CCSS和Flere的脸之间变幻！
+					</div>
+					
+					<div id="gameinfo-bar">
+						<div class="row" id="gaming-info">
+							<div class="col-xs-3">克苏鲁获得的神智：</div>
+							<div class="col-xs-9"><div id="cthulhu-sanity">0</div></div>
+						</div>
+	
+						<div class="row">
+							<div class="col-xs-9">当前轮到 <label id="rollsequence"></label> 投骰</div>
+							<div class="col-xs-3">投骰倒计时：<label id="countDown"></label></div>
+						</div>
+					</div>
+				<div id="screen" class="col-xs-9">
+					<ul class="list-group" id="chat_list">
+						<script type="text/template" id="item-template">
+							<span class="msgnick"><%=username_id %></span> <span class="colon">  </span> <span class="msgcontent"><%=content %></span>
+							<span class="msgtime">[<%=date %>]</span>
+						</script>
+						<script type="text/template" id="roll-template">
+							<span class="msgnick"><%=username_id %></span> <span class="msgcontent"><%=content %></span>
+							<span class="msgtime">[<%=date %>]</span>
+						</script>
+						
+					</ul>
+				</div>
+				<div id="pc_list" class="col-xs-3">
+					<ul class="list-group" id="pclist_info">
+						<script type="text/template" id="pc-template">
+							<div id="pc_<%=id %>"><button type="button" class="btn btn-default" onclick="appView.rollDice(<%=id %>)" title="攻击此人"><img src="/static/image/dice_0_small.png"></button><span class="msgnick" title="<%=id %>"><%=player %></span> <a class="san" id="<%=id %>" title="神智"><%=sanity %></a></div>
+						</script>
+					</ul>
+				</div>
+			</div>
+			<div id="send_message">
+				{% csrf_token %}
+				<div id="message">
+					<textarea id="content" rows="1"></textarea>
+				</div>
+				<div id="opt">
+					<!--label id="nicknm">昵称：</label><input name="nickname" id="nickname" value={{ user.username }}/><br/-->
+					<button id="send">发送消息</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- </body> -->
+</body>
+
+<script src="/static/backbone/jquery-1.10.2.min.js"></script>
+<script src="/static/backbone/underscore.js"></script>
+<script src="/static/backbone/backbone-min.js"></script>
+<script src="/static/backbone/backbone_sync_csrftoken.js"></script>
+
+{% csrf_token %}
+<script type="text/javascript">
+	function show_time()
+	{
+		var today,hour,second,minute,year,month,date,time;
+		today=new Date();
+		year = today.getFullYear();
+		month = today.getMonth()+1;
+		date = today.getDate();
+		hour = today.getHours();
+		minute =today.getMinutes();
+		second = today.getSeconds();
+		if(minute < 10) minute = '0' + minute;
+		if(second < 10) second = '0' + second;
+		time = year + "-" + month + "-" + date +" " + hour + ":" + minute + ":" + second;
+		$("#nowdate").html(time);
+	}
+	setInterval(show_time,1000);
+
+
+
+	//////////////////////////////////////////////////////////////	
+	var Chat = Backbone.Model.extend({
+		urlRoot:'',
+
+		defaults: {
+			content:'',
+			username_id:'',
+			date:'',
+			cmd:'',
+			target:'',
+			cmdType:'',
+			gid: '',
+		},
+
+		clear: function(){
+			this.destroy();
+		}
+	});
+	
+	var ChatList = Backbone.Collection.extend({
+		url:'http://www.minvacai.net:9000/cthulhudice/chat/',
+
+		model:Chat
+	});
+	
+	var chatList = new ChatList;
+
+
+	
+	//////////////////////////////////////////
+	var ChatView = Backbone.View.extend({
+		tagName:'li',
+		className: 'media',
+
+		template:_.template($('#item-template').html()),
+		rollTemplate: _.template($('#roll-template').html()),
+		pclistTemplate: _.template($('#pc-template').html()),
+		events:{
+			'click #destroy' : 'clear'
+		},
+
+		initialize:function(){
+			_.bindAll(this,'render','remove');
+			this.model.bind('change', this.render);
+			this.model.bind('destroy', this.remove);
+		},
+
+		render: function(cmd){
+			switch(cmd){
+				case "chat":
+				$(this.$el).html(this.template(this.model.toJSON()));
+				break;
+
+				case "roll":
+				$(this.$el).html(this.rollTemplate(this.model.toJSON()));
+				break;
+
+				case "OLPC":
+				var pclst = this.model.toJSON();
+				con = JSON.parse(pclst["content"]);
+				$(this.$el).html(this.pclistTemplate(con[0]));
+				break;
+				
+				case "CRTG":
+				$("#sgame-btn").show();
+				$("#head").show();
+				break;
+
+
+				case "QRGI":
+					// get and set game & round values
+					var qrMsg = this.model.toJSON();
+					grInfo = JSON.parse(qrMsg["content"]);
+				break;
+				
+				default:
+				break;
+			}
+			return this;
+		},
+
+		clear: function(){
+			this.model.clear();
+		}
+	});
+	
+
+	//////////////////////////////////////////
+	var AppView = Backbone.View.extend({
+		el:$('#main'),
+	
+		events: {
+			"click #send": "say",
+			"click #createGame": "createNewGame",
+			"click #joinGame": "joinGame",
+			"click #startGame": "startGame",
+			"click #eyeChoose": "sendEye",
+			"click #rollDiceBtn":"rollDice",
+			"click #quitBtn":"quit2Interface",
+			"click #quitGameBtn":"sendQuitGameMsg",
+		},
+	
+		initialize: function() {
+			_.bindAll(this,'addOne','addAll');//,'addPc','addPcList');
+			//this.nickname = this.$("#nickname");
+			this.textarea = this.$("#content");
+	    
+			chatList.bind('add', this.addOne);
+			chatList.bind('reset', this.addAll);
+
+			chatList.fetch();
+			this.getGRInfo();
+			//this.getPCList();
+	     
+			clock1 = setInterval(function() {
+				chatList.fetch({add: true});
+			}, 5000);
+			
+		},
+
+		getPCList: function() {
+			msg1 = chatList.create(this.newAttributes(0, "GPCL", "", "", "",0));
+			return ;
+		},
+	
+		addOne: function(chat) {
+			//页面所有的数据都来源于server端，如果不是server端的数据，不应添加到页面上
+			if(!chat.isNew()) {  
+				var view = new ChatView({model:chat});
+				obj = view.model.attributes;
+				//----add----------------------------------------------
+				switch(obj.cmd){
+					case "chat":
+						this.$("#chat_list").append(view.render(obj.cmd).el);
+						$('#screen').scrollTop($("#chat_list").height() + 200);
+					break;
+	
+					case "OLPC":
+						this.cutPCList(obj.content, obj.gid ,chat );
+					break;
+					
+					case "CRTG":
+						var errmsg = obj.content;
+						if(errmsg[0]=="{"){
+							startmsg = "仪式成功启动！持有代码 "+obj.gid+" 者方可加入该仪式。"
+							//alert(startmsg);
+							$("#mynick").text(obj.username_id);
+							
+							this.phraseGRInfo(obj,view,chat);
+							
+							this.showMsg(chat, "[系统]", startmsg, obj.date,"sys");
+						}
+						else{
+							if(obj.gid<=0){
+								alert("出错啦！哈哈哈");
+							}else{
+								alert("你已经身处一个祭祀仪式中！");
+								$("#ccode").show();
+								tgid = obj.gid;
+								$("#game-id").text(tgid);
+								$("#cjgame-btn").hide();
+							}
+						}
+					break;
+					
+					case "QRGI":
+						$("#mynick").text(obj.username_id);
+						this.phraseGRInfo(obj,view,chat);
+						
+						$("#waiting-dlg").hide(); //揭去等待之幕
+					break;
+					
+					case "JOIN":
+						if(obj.gid==0){
+							showMsg(chat, "[系统]","加入失败！", obj.date,"sys");
+						}else{
+							if($("#mynick").text() == "" ){
+								$("#mynick").text(obj.username_id);
+							}
+							this.phraseGRInfo(obj,view,chat);
+						}
+					break;
+					
+					case "STRT":
+						if(obj.gid==0){
+							this.showMsg(chat,"","你不能开始此仪式！", obj.date,"sys");
+							break;
+						}
+						//初始化界面；解析并显示游戏信息
+						this.GameInterfaceBegin(obj,view,chat);
+					break;
+					
+					case "ROLL":
+						if(obj.gid==0){
+							alert(obj.content);
+							break;
+						}
+						this.parseRollMsg(obj,view,chat);
+					break;
+					
+					case "EYE":
+						if(obj.cmdType=="pri"){
+							txt = obj.content;
+							this.showMsg(chat,"[重新选择]",txt, obj.date,"sys");
+							break;
+						}
+						//解析并显示游戏信息
+						this.parseRollMsg(obj,view,chat);
+					break;
+					
+					case "QUIT":
+						this.quitGame(chat,obj);
+					break;
+	
+					default:
+					break;
+	
+				}
+				//----add-finished-------------------------------------
+			}
+		},
+	
+		addAll: function() {
+			chatList.each(this.addOne);
+		},
+	
+		say: function(event) {
+			r = chatList.create(this.newAttributes(1, 0, 0, 0, 0, 0));
+	
+			//为了满足IE和FF以及chrome
+			this.textarea.text('');
+			this.textarea.val('');
+			this.textarea.html('');
+			//alert("eof say");
+	
+		},
+
+		createNewGame: function(event) {
+			var r = chatList.create(this.newAttributes(0, "CRTG", "", 0, "", 0));
+			return
+		},
+		
+		joinGame: function(event) {
+			var ccode = prompt("请输入您的祭祀仪式通行代码："); 
+	    		if(ccode == "") return;  
+			var r = chatList.create(this.newAttributes(0, "JOIN", "", 0, "", ccode));
+			return
+		},
+		
+		startGame: function(event) {
+			var r = chatList.create(this.newAttributes(0, "STRT", "", 0, "", 0));
+		},
+		
+		quitGame: function(chat,msg) {
+			g = JSON.parse(msg.content);
+			crntPC = $("#mynick").text();
+			
+			if(msg.username_id==crntPC || g["owner"]=="T"){
+				this.showBeginUI();
+				$("#pclist_info").empty();
+			}else{
+				t_index = "#pc_"+g["pc"];
+				tp = $(t_index).parent();
+				tp.remove();
+			}
+			txt = msg.username_id + "退出了。";
+			this.showMsg(chat,"[提示]",txt, msg.date,"sys");
+		},
+		
+		sendEye: function(selected_dice) {
+			selected_dice = $("input[name='eyeGrp']:checked").val();
+			var r = chatList.create(this.newAttributes(0, "EYE", selected_dice, 0, "", 0));
+			$("#eyeDlg").remove();
+		},
+		
+		sendQuitGameMsg:function() {
+			var r = chatList.create(this.newAttributes(0, "QUIT", "", 0, "", 0));
+		},
+		
+		getGRInfo: function() {
+			var r = chatList.create(this.newAttributes(0, "QRGI", "", 0, "", 0));
+			return
+		},
+
+		rollDice: function(uid) {
+			var r = chatList.create(this.newAttributes(0, "ROLL", "", 0, uid, 0));
+			return
+		},
+		
+		//================================================================
+		cutPCList: function(_pclist, _gid, chat ) {
+			this.$("#pclist_info").empty();
+			tmp = _pclist;//msg.content;
+			tmpPcl = JSON.parse(tmp);
+			maxlen = tmpPcl.length;
+			for( var i=0;i<maxlen;i++){
+				var t_view = new ChatView({model:chat});
+				t_obj = t_view.model.attributes;
+				t_content = '[{"id":"'+tmpPcl[i]["id"]+'","player":"'+tmpPcl[i]["player"]+'","sanity":"'+tmpPcl[i]["sanity"]+'"}]';
+				t_obj.content = t_content;
+				this.$("#pclist_info").append(t_view.render("OLPC").el);
+				$('#pc_list').scrollTop($("#pclist_info").height() + 200);
+			}
+			if(_gid>0){
+				$("#ccode").show();
+				gid = _gid;
+				$("#game-id").text(gid);
+				$("#cjgame-btn").hide();
+			}
+		},
+		//================================================================
+		
+		phraseGRInfo: function(msg,pview,chat) {
+			if(msg.gid==0){
+				this.showBeginUI();
+				return
+			}
+			grInfo = JSON.parse(msg.content);
+			
+			switch(grInfo["statue"]){
+			case 1:
+				this.cutPCList(grInfo["ps"], grInfo["gid"],chat );
+				selfnick = this.getNickFromId(grInfo["creator"]);
+				
+				isCreator = 0;
+				if( selfnick == $("#mynick").text() ) isCreator = 1;
+				this.showWaitingUI(isCreator, grInfo["gid"]);
+				break;
+			
+			case 2:
+
+				this.showGamingUI();
+				$("#game-id").text(msg["gid"]);
+				$("#cthulhu-sanity").text(grInfo["cs"]);
+				this.cutPCList(grInfo["ps"], grInfo["gid"],chat );
+				break;
+			
+			default:
+				this.showBeginUI();
+				break;
+			}
+			
+			//信息显示
+			nick = this.getNickFromId(grInfo["actor"]);
+			$("#rollsequence").text(nick);
+			
+			if(grInfo["cdice"]==9 || grInfo["vdice"]==9){
+				if(grInfo["cdice"]==9) er = grInfo["caster"];
+				else er = grInfo["victim"];
+				
+				nick = this.getNickFromId(er);
+				if( nick == $("#mynick").text() ){
+					this.createEyeDlg();
+				}else {
+					this.showMsg(chat,nick,"投出了<img src=\"/static/image/eye.png\" title=\"眼睛\" />，正在选择...", msg.date,"sys");
+				}
+			}
+			return
+		},
+		
+		showBeginUI:function(){
+			$("#cjgame-btn").show();
+			$("#sgame-btn").hide();
+			$("#waiting-bar").hide();
+			$("#gameinfo-bar").hide();
+			$("#ccode").hide();
+		},
+		
+		showWaitingUI:function(isCreator, gid){
+			$("#cjgame-btn").hide();
+			$("#sgame-btn").show();
+			$("#waiting-bar").show();
+			$("#gameinfo-bar").hide();
+			$("#ccode").show();
+			$("#game-id").text(gid);
+			
+			if(isCreator==0){
+				$("#startGame").hide();
+			}else{
+				$("#startGame").show();
+			}
+		},
+		
+		showGamingUI:function(){
+			$("#cjgame-btn").hide();
+			$("#sgame-btn").hide();
+			$("#waiting-bar").hide();
+			$("#gameinfo-bar").show();
+			$("#ccode").show();
+			$("#startGame").hide();
+		},
+		
+		GameInterfaceBegin: function(msg,pview,chat) {
+			this.showGamingUI();
+			
+			$("#game-id").text(gid);
+			
+			grInfo = JSON.parse(msg.content);
+			
+			$("#cthulhu-sanity").text(grInfo["cs"]);
+			firstID = grInfo["caster"]
+			this.cutPCList(grInfo["ps"], grInfo["gid"],chat );
+			
+			firstone = this.getNickFromId( firstID )
+			$("#rollsequence").text(firstone);
+
+			//显示游戏开始消息
+			var view_sm = new ChatView({model:chat});
+			sm = view_sm.model.attributes;
+			sm.username_id = '<span class="SYS">[系统]</span>';
+			sm.content = '<span class="SYS"><img src="/static/image/dice_0_small.png">仪式开始！每个人的面前都出现了一个奇特的骰子，接下来的命运将由你们自己决定……</span>';
+			sm.date = msg.date;
+			this.$("#chat_list").append(view_sm.render("chat").el);
+			$('#screen').scrollTop($("#chat_list").height() + 200);
+
+			return
+		},
+
+		showMsg: function(chat, speaker, text, date, flag ){
+			var view_sm = new ChatView({model:chat});
+			sm = view_sm.model.attributes;
+			switch(flag){	//pub,pri,gam,sys,ann
+			case "sys":
+				s = '<span class="SYS">'+speaker+"</span>";
+			break;
+			
+			case "gam":
+				s = '<span class="IDT">' + speaker+"</span>：";
+			break;
+			
+			default:
+			break;
+			}
+			
+			sm.username_id = s;
+			sm.content = text;
+			sm.date = date;
+			this.$("#chat_list").append(view_sm.render("chat").el);
+			$('#screen').scrollTop($("#chat_list").height() + 200);
+		},
+		
+		modifySans: function(p, infoFlag, roller, action, result, chat, date) {
+			pclist = p;
+			
+			for(var i in pclist){
+				san = pclist[i]["sanity"];
+				index = "[id='"+ pclist[i]["pid"] +"']";
+				$(index).text(san);
+				if(infoFlag==1){
+					temp = pclist[i]["pid"];
+					target = this.getNickFromId(temp.toString());
+					txt = roller + action + target + result;
+					this.showMsg(chat,"[投骰]",txt, date,"sys");
+				}
+			}
+		},
+		
+		
+		
+		createEyeDlg: function(){
+			eyeDialog = "<div id=\"eyeDlg\"></div>";
+			$("#sub-win").prepend(eyeDialog);
+			subtxt1 = '<fieldset>      <div id="legend" class="">        <legend class=""><img src="/static/image/eye.png" title="眼睛" />你获得了一次重新选择的机会……你的选择是？</legend>      </div>    <div class="control-group">          <label class="control-label"></label>          <div class="controls">      <!-- Inline Radios -->      <label class="radio-inline">        <input checked="checked" value="Cthulhu" name="eyeGrp" type="radio">        <img src="/static/image/cthulhu.png" title="克苏鲁">      </label>';
+			subtxt2 = '<label class="radio-inline">        <input value="Tentacle" name="eyeGrp" type="radio">        <img src="/static/image/tentacle.png" title="触手">      </label>      <label class="radio-inline">        <input value="Yellow" name="eyeGrp" type="radio">        <img src="/static/image/yellow.png" title="黄色符号">      </label>      <label class="radio-inline">        <input value="Elder" name="eyeGrp" type="radio">        <img src="/static/image/eldersign.png" title="上古符号">      </label>  </div>        </div>    <div class="control-group">          <label class="control-label"></label>          <!-- Button -->          <div class="controls">            <button class="btn btn-default" id="eyeChoose">确定</button>          </div>       </div>    </fieldset>';
+			subtxt = subtxt1 + subtxt2;
+
+			$("#eyeDlg").append(subtxt);
+		},
+		
+		getNickFromId: function(playerID) {
+			t_index = "[title='"+playerID.toString()+"']";
+			nick = $(t_index).text();
+			return nick;
+		},
+		
+		parseRollMsg: function(msg,pview,chat){
+			var usernm = msg.username_id;
+			var crntDate = msg.date;
+			
+			if(msg.content[1]=="u"){
+				alert("你未指定一个目标！");
+				return;
+			}
+			if(msg.content[1]=="t"){
+				txt = "目标已疯，你不能进行此操作。";
+				
+				var today,hour,second,minute,time;
+				today=new Date();
+				
+				hour = today.getHours();
+				minute =today.getMinutes();
+				second = today.getSeconds();
+				
+				if(minute < 10) minute = '0' + minute;
+				if(second < 10) second = '0' + second;
+				time = hour + ":" + minute + ":" + second;
+				this.showMsg(chat, "[提示]", txt, time, "sys" );
+				
+				return;
+			}
+			grInfo = JSON.parse(msg.content);
+			
+			cfbFlag = 0;
+			if(grInfo["info"]["rollFlag"]==1) cfbFlag=1;
+			
+			if( grInfo["info"]["dice"]=="" ){
+				alert("no dice");
+				return;
+			}
+			text = "";
+			msgFlag = 1;
+			TentacleFlag = 0;
+			switch(grInfo["info"]["dice"]){
+			case "Cthulhu":
+				action =  "投出了<img src=\"/static/image/cthulhu.png\" title=\"克苏鲁\" /> ！";
+				result = '的脸上呈现出一种魂飞魄散的恐惧！';//神智<span class="NumPos">-1</span>，克苏鲁得到了1点神智！';
+			break;
+			
+			case "Tentacle":
+				tmpPl = grInfo["info"]["ps"];
+				if(grInfo["info"]["rollFlag"]==1){
+					if(tmpPl[1]["pid"] == grInfo["target"]){
+						v_ID = tmpPl[0]["pid"];
+						c_ID = tmpPl[1]["pid"];
+					}else{
+						v_ID = tmpPl[1]["pid"];
+						c_ID = tmpPl[0]["pid"];
+					}
+				}else{
+					if(tmpPl[1]["pid"] == grInfo["target"]){
+						v_ID = tmpPl[1]["pid"];
+						c_ID = tmpPl[0]["pid"];
+					}else{
+						v_ID = tmpPl[0]["pid"];
+						c_ID = tmpPl[1]["pid"];
+					}
+				}
+				index = "[id='"+ c_ID +"']";
+				c_san = $(index).text();
+				index = "[id='"+ v_ID +"']";
+				v_san = $(index).text();
+				crnt_attacker_san = c_san;
+				
+				if(crnt_attacker_san=="0"){
+				        action = '投出了<img src=\"/static/image/tentacle.png\" title=\"触手\" /> ！只见一个巨大的阴影在其背后缓缓升起，';//<span class="IDT">克苏鲁</span>神智<span class="NumPos">+1</span>！';
+				}else{
+
+				        action = "投出了<img src=\"/static/image/tentacle.png\" title=\"触手\" /> ！"+this.getNickFromId(c_ID)+'不由得精神一振，与此同时，';//"神智<font color=#008800>+1</font>！";
+				}
+				
+				result = "感觉到一只冷冰冰粘乎乎的触手在脸上滑过……";//神智<font color=#ff0000>-1</font>";
+				
+				if(cfbFlag==1) action = "进行反击，"+action;
+				txt = msg.username_id + action + this.getNickFromId(v_ID) + result;
+				this.showMsg(chat,"[投骰]",txt, msg.date,"sys");
+
+				index = "[id='"+ c_ID +"']";
+				san = Number($(index).text());
+				if( san>0 ){
+					$(index).text(san+1);
+				}
+				
+				index = "[id='"+ v_ID +"']";
+				san = Number($(index).text());
+				$(index).text(san-1);
+				TentacleFlag = 1;
+			break;
+
+			case "Yellow":
+				action =  "投出了<img src=\"/static/image/yellow.png\" title=\"黄色符号\" /> ！";
+				result = '只觉得眼前一片刺眼的黄光闪动，在其背后的墙上投射出一个巨大阴影。';//"神智<font color=#ff0000>-1</font>，克苏鲁得到了1点神智！";
+			break;
+			
+			case "Elder":
+				action =  "投出了<img src=\"/static/image/eldersign.png\" title=\"上古符号\" /> ！";
+				result = '感觉自己清醒了一些，随即这神秘的光辉便消失了。';//"从克苏鲁那里获得了<font color=#008800>+1</font>神智！";
+			break;
+			
+			case "Eye":
+				//弹窗，选择骰子
+				msgFlag = 0;
+				txt = usernm + "投出了<img src=\"/static/image/eye.png\" title=\"眼睛\" />，获得了一次重新选择的机会！";
+				this.showMsg(chat,"[投骰]",txt, msg.date,"sys");
+				
+				if( usernm==$("#mynick").text() ){
+					this.createEyeDlg();
+				}
+
+			break;
+			
+			default:
+			break;
+			}
+			if (TentacleFlag ==0){
+				if(cfbFlag==1) action = "进行反击，"+action;
+				this.modifySans(grInfo["info"]["ps"], msgFlag, usernm, action, result, chat, msg.date);
+			}
+			
+			if(cfbFlag==1) this.showMsg(chat,'<span class="rndEnd">【本回合结束】</span>',"", msg.date,"sys");
+
+			$("#cthulhu-sanity").text(grInfo["info"]["cs"]);
+			
+			//当前轮到哪一个PC投骰
+			iNextPC = grInfo["info"]["pTurn"];
+			crntRoll = this.getNickFromId( iNextPC );//.toString() );
+			$("#rollsequence").text(crntRoll);
+			
+			//判断游戏是否结束
+			if(grInfo["info"]["gameover"]==1){
+				winnerMsg = "没有人幸存下来。";
+				if(grInfo["info"]["winner"]>0){
+					winner = this.getNickFromId(grInfo["info"]["winner"]);
+					winnerMsg = winner+" 幸存了下来。除此之处的其他人都疯了。";
+				}
+				
+				quitBtnTxt = '<button type="button" class="btn btn-default" id="quitBtn">退出</button>';
+				winnerMsg = winnerMsg + quitBtnTxt;
+				this.showMsg(chat,"一切都结束了。",winnerMsg, crntDate,"sys");
+				$("#gameinfo-bar").hide();
+				
+				//游戏结束，清空PC列表
+				$("#pclist_info").empty();
+			}
+		},
+		
+		quit2Interface: function() {
+			$("#gameinfo-bar").hide();
+			$("#cjgame-btn").show();
+			$("#sgame-btn").hide();
+			$("#waiting-bar").hide();
+			$("#gaming-info").hide();
+			$("#ccode").hide();
+			$("#quitBtn").remove();
+			
+		},
+		
+
+	
+		newAttributes: function(chatFlg, cmd_v, content_v, cmdType_v, target_v, gid_v) {
+			var content = "";
+			var command = "";
+			var ct = "";
+			var tgt = "";
+	
+			if(chatFlg==1){
+				content = this.textarea.val();
+				if (content == "") {
+					content = this.textarea.text();
+				}
+				command = "chat";
+			}
+			else {
+				command = cmd_v;
+				content = content_v;
+				ct = cmdType_v;
+				tgt = target_v;
+				//gid = gid_v;
+			}
+	
+			/////////////////////////////////////////
+	
+			t = Date.parse(new Date());
+			rValue = {
+				content: content,
+				username_id: {{ user.id }}, //this.nickname.val(),
+				date: t,   //get_time()
+				cmd: command, //"chat"
+				cmdType: ct,
+				target: tgt,
+				gid: gid_v
+			};
+	
+			//alert(">>> eof newAttributes"+rValue);//debug
+	
+			return rValue;
+		}
+	});
+
+
+	var appView = new AppView;
+
+	setInterval("appView.getPCList()",180000);
+</script>
+
+
+</html>
